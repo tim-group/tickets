@@ -24,7 +24,7 @@ public class Ticket {
                     builder.append(',');
                 }
                 builder.append(e.getKey().charValue());
-                builder.append(value);
+                encodeValue(value, builder);
             }
         }
         String payload = builder.toString();
@@ -61,7 +61,7 @@ public class Ticket {
             if (key == 'x') {
                 continue;
             }
-            String value = part.substring(1);
+            String value = decodeValue(part.substring(1));
             add(key, value);
         }
     }
@@ -112,5 +112,42 @@ public class Ticket {
             throw new IllegalArgumentException("key 'x' is reserved for the MAC");
         }
         data.put(key, new ArrayList<String>(value));
+    }
+
+    private void encodeValue(CharSequence value, StringBuilder output) {
+        output.ensureCapacity(output.length() + value.length());
+        for (int i = 0; i < value.length(); i++) {
+            int c = value.charAt(i);
+            if (c >= 256) {
+                output.append(String.format("=%04x", c));
+            } else if (isReserved(c)) {
+                output.append(String.format("+%02x", c));
+            } else {
+                output.append((char) c);
+            }
+        }
+    }
+
+    private String decodeValue(CharSequence input) {
+        StringBuilder builder = new StringBuilder(input.length());
+        for (int i = 0; i < input.length(); i++) {
+            int c = input.charAt(i);
+            if (c == '=') {
+                int decoded = Integer.parseInt(input.subSequence(i + 1, i + 5).toString(), 16);
+                builder.append((char) decoded);
+                i += 4;
+            } else if (c == '+') {
+                int decoded = Integer.parseInt(input.subSequence(i + 1, i + 3).toString(), 16);
+                builder.append((char) decoded);
+                i += 2;
+            } else {
+                builder.append((char) c);
+            }
+        }
+        return builder.toString();
+    }
+
+    private boolean isReserved(int ch) {
+        return ch <= 32 || ch >= 127 || ch == '+' || ch == '=' || ch == ',';
     }
 }

@@ -61,6 +61,23 @@ public class TicketTest {
         assertEquals("a1,a2,b1,xnoodles", ticket.marshal());
     }
 
+    @Test public void escapes_single_reserved_ascii_characters_when_marshalling() throws Exception {
+        Ticket ticket = new Ticket(DUMMY_MAC_GENERATOR);
+        ticket.add('a', "1,2");
+        ticket.add('a', "1 2");
+        ticket.add('a', "1+2");
+        ticket.add('a', "1=2");
+        ticket.add('a', "1\n2");
+        assertEquals("a1+2c2,a1+202,a1+2b2,a1+3d2,a1+0a2,xnoodles", ticket.marshal());
+    }
+
+    @Test public void escapes_other_unicode_characters_when_marshalling() throws Exception {
+        Ticket ticket = new Ticket(DUMMY_MAC_GENERATOR);
+        ticket.add('a', "\u00a3");
+        ticket.add('a', "\u20ac");
+        assertEquals("a+a3,a=20ac,xnoodles", ticket.marshal());
+    }
+
     @Test public void unmarshals_just_mac_to_empty_ticket() throws Exception {
         Ticket ticket = new Ticket(DUMMY_MAC_GENERATOR);
         ticket.unmarshal("xnoodles");
@@ -95,6 +112,24 @@ public class TicketTest {
         Ticket ticket = new Ticket(DUMMY_MAC_GENERATOR);
         ticket.unmarshal(",xnoodles");
         assertThat(ticket, is(emptyTicket()));
+    }
+
+    @Test public void unescapes_ascii_characters_when_unmarshalling() throws Exception {
+        Ticket ticket = new Ticket(DUMMY_MAC_GENERATOR);
+        ticket.unmarshal("a1+2c2,xnoodles");
+        assertThat(ticket, is(ticket().containing('a', "1,2")));
+    }
+
+    @Test public void unescapes_other_unicode_characters_when_unmarshalling() throws Exception {
+        Ticket ticket = new Ticket(DUMMY_MAC_GENERATOR);
+        ticket.unmarshal("a=20ac,xnoodles");
+        assertThat(ticket, is(ticket().containing('a', "\u20ac")));
+    }
+
+    @Test public void unescapes_even_when_hex_formatted_as_uppercase() throws Exception {
+        Ticket ticket = new Ticket(DUMMY_MAC_GENERATOR);
+        ticket.unmarshal("a=20AC,xnoodles");
+        assertThat(ticket, is(ticket().containing('a', "\u20ac")));
     }
 
     @Test(expected = InvalidTicketException.class) public void fails_to_unmarshal_empty_string() throws Exception {
