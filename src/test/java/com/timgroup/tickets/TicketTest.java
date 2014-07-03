@@ -14,6 +14,11 @@ import org.junit.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 public class TicketTest {
     private static final TicketMacGenerator DUMMY_MAC_GENERATOR = new TicketMacGenerator() {
@@ -145,6 +150,43 @@ public class TicketTest {
     @Test(expected = TicketMacMismatchException.class) public void fails_to_unmarshal_attribute_and_invalid_mac() throws Exception {
         Ticket ticket = new Ticket(DUMMY_MAC_GENERATOR);
         ticket.unmarshal("a1,xblahblah");
+    }
+
+    @Test public void marshalling_passes_empty_payload_to_mac_generator() throws Exception {
+        TicketMacGenerator macGenerator = mock(TicketMacGenerator.class);
+        when(macGenerator.generateMAC(anyString())).thenReturn("zzzz");
+        Ticket ticket = new Ticket(macGenerator);
+        ticket.marshal();
+        verify(macGenerator).generateMAC("");
+        verifyNoMoreInteractions(macGenerator);
+    }
+
+    @Test public void marshalling_passes_payload_without_trailer_to_mac_generator() throws Exception {
+        TicketMacGenerator macGenerator = mock(TicketMacGenerator.class);
+        when(macGenerator.generateMAC(anyString())).thenReturn("zzzz");
+        Ticket ticket = new Ticket(macGenerator);
+        ticket.add('a', "1");
+        ticket.marshal();
+        verify(macGenerator).generateMAC("a1");
+        verifyNoMoreInteractions(macGenerator);
+    }
+
+    @Test public void unmarshalling_passes_empty_payload_to_mac_generator() throws Exception {
+        TicketMacGenerator macGenerator = mock(TicketMacGenerator.class);
+        when(macGenerator.generateMAC(anyString())).thenReturn("zzzz");
+        Ticket ticket = new Ticket(macGenerator);
+        ticket.unmarshal("xzzzz");
+        verify(macGenerator).generateMAC("");
+        verifyNoMoreInteractions(macGenerator);
+    }
+
+    @Test public void unmarshalling_passes_payload_without_trailer_to_mac_generator() throws Exception {
+        TicketMacGenerator macGenerator = mock(TicketMacGenerator.class);
+        when(macGenerator.generateMAC(anyString())).thenReturn("zzzz");
+        Ticket ticket = new Ticket(macGenerator);
+        ticket.unmarshal("a1,xzzzz");
+        verify(macGenerator).generateMAC("a1");
+        verifyNoMoreInteractions(macGenerator);
     }
 
     private static Matcher<Ticket> emptyTicket() {

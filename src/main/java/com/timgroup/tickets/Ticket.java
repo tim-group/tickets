@@ -46,7 +46,7 @@ public class Ticket {
         if (parts.length == 1) {
             ourMac = macGenerator.generateMAC("");
         } else {
-            String payload = input.substring(input.length() - macPart.length() - 1);
+            String payload = input.substring(0, input.length() - macPart.length() - 1);
             ourMac = macGenerator.generateMAC(payload);
         }
         if (!ourMac.equals(theirMac)) {
