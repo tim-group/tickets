@@ -151,6 +151,15 @@ public class TicketTest {
                         .appendValue(expectedData.keySet());
                 return false;
             }
+            for (char key : expectedData.keySet()) {
+                List<String> expectedValues = expectedData.get(key);
+                List<String> values = item.get(key);
+                if (!values.equals(expectedValues)) {
+                    mismatchDescription.appendText("ticket values for ").appendValue(key).appendText(" expected ")
+                            .appendValue(expectedValues).appendText(" got ").appendValue(values);
+                    return false;
+                }
+            }
             return true;
         }
 
