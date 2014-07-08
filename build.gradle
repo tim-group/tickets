@@ -54,7 +54,7 @@ repositories {
     }
 }
 
-def slf4jVersion = '1.7.5'
+def slf4jVersion = '1.7.6'
 
 // some of these dependencies are optional, in that they are needed to build, but might not be needed to run; Gradle does currently let us say so
 dependencies {
