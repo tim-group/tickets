@@ -7,10 +7,15 @@ if (doSigning) {
 apply plugin: 'eclipse'
 
 group = 'com.timgroup'
-ext.url = 'https://github.com/youdevise/tickets'
+ext {
+    url = 'https://github.com/youdevise/tickets'
+    slf4jVersion = '1.7.12'
+    majorVersion = 1
+    minorVersion = 0
+}
 
-def majorVersion = 1
-def minorVersion = 0
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 /** for Maven Central; manually bump major and/or minor version numbers before building */
 def isPublicRelease() {
@@ -54,14 +59,12 @@ repositories {
     }
 }
 
-def slf4jVersion = '1.7.6'
-
 // some of these dependencies are optional, in that they are needed to build, but might not be needed to run; Gradle does currently let us say so
 dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
     
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-    testCompile group: 'org.mockito', name: 'mockito-core', version: '1.8.5'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '1.10.19'
     
     testRuntime group: 'org.slf4j', name: 'slf4j-simple', version: slf4jVersion
 }
