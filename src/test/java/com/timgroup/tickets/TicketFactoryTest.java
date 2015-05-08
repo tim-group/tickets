@@ -28,27 +28,55 @@ public class TicketFactoryTest {
     };
 
     @Test public void marshals_empty_ticket() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         Ticket ticket = new Ticket();
         assertEquals("xnoodles", ticketFactory.marshal(ticket));
     }
 
     @Test public void marshals_single_attribute_with_empty_value() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         Ticket ticket = new Ticket();
         ticket.add('a', "");
         assertEquals("a,xnoodles", ticketFactory.marshal(ticket));
     }
 
+    @Test public void marshals_using_specified_separator() throws Exception {
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, '.', '=', '+', "".toCharArray());
+        Ticket ticket = new Ticket();
+        ticket.add('a', "");
+        assertEquals("a.xnoodles", ticketFactory.marshal(ticket));
+    }
+
+    @Test public void escapes_specified_separator() throws Exception {
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, '.', '=', '+', "".toCharArray());
+        Ticket ticket = new Ticket();
+        ticket.add('a', "b.c");
+        assertEquals("ab+2ec.xnoodles", ticketFactory.marshal(ticket));
+    }
+
+    @Test public void escapes_specified_unicode_escape() throws Exception {
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, '.', '!', '+', "".toCharArray());
+        Ticket ticket = new Ticket();
+        ticket.add('a', "b!c");
+        assertEquals("ab+21c.xnoodles", ticketFactory.marshal(ticket));
+    }
+
+    @Test public void escapes_specified_reserved_character_escape() throws Exception {
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, '.', '=', '!', "".toCharArray());
+        Ticket ticket = new Ticket();
+        ticket.add('a', "b!c");
+        assertEquals("ab!21c.xnoodles", ticketFactory.marshal(ticket));
+    }
+
     @Test public void marshals_single_attribute_with_value() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         Ticket ticket = new Ticket();
         ticket.add('a', "1");
         assertEquals("a1,xnoodles", ticketFactory.marshal(ticket));
     }
 
     @Test public void marshals_two_attributes_in_insertion_order() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         Ticket ticket = new Ticket();
         ticket.add('b', "2");
         ticket.add('a', "1");
@@ -56,7 +84,7 @@ public class TicketFactoryTest {
     }
 
     @Test public void marshals_multiple_attribute_values() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         Ticket ticket = new Ticket();
         ticket.add('a', "1");
         ticket.add('a', "2");
@@ -64,7 +92,7 @@ public class TicketFactoryTest {
     }
 
     @Test public void marshals_attribute_values_grouped_together() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         Ticket ticket = new Ticket();
         ticket.add('a', "1");
         ticket.add('b', "1");
@@ -73,7 +101,7 @@ public class TicketFactoryTest {
     }
 
     @Test public void escapes_single_reserved_ascii_characters_when_marshalling() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "+=".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         Ticket ticket = new Ticket();
         ticket.add('a', "1,2");
         ticket.add('a', "1 2");
@@ -84,7 +112,7 @@ public class TicketFactoryTest {
     }
 
     @Test public void escapes_other_unicode_characters_when_marshalling() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         Ticket ticket = new Ticket();
         ticket.add('a', "\u00a3");
         ticket.add('a', "\u20ac");
@@ -92,69 +120,74 @@ public class TicketFactoryTest {
     }
 
     @Test public void unmarshals_just_mac_to_empty_ticket() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         assertThat(ticketFactory.unmarshal("xnoodles"), is(emptyTicket()));
     }
 
     @Test public void unmarshals_single_attribute_with_empty_value() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         assertThat(ticketFactory.unmarshal("a,xnoodles"), is(ticket().containing('a', "")));
     }
 
+    @Test public void unmarshals_using_specified_separator() throws Exception {
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, '.', '=', '+', "".toCharArray());
+        assertThat(ticketFactory.unmarshal("a.xnoodles"), is(ticket().containing('a', "")));
+    }
+
     @Test public void unmarshals_single_attribute_with_value() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         assertThat(ticketFactory.unmarshal("a1,xnoodles"), is(ticket().containing('a', "1")));
     }
 
     @Test public void unmarshals_two_attributes_in_order() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         assertThat(ticketFactory.unmarshal("a1,b1,xnoodles"), is(ticket().containing('a', "1").containing('b', "1").inOrder()));
     }
 
     @Test public void unmarshals_attributes_even_if_not_grouped_correctly() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         assertThat(ticketFactory.unmarshal("a1,b1,a2,xnoodles"), is(ticket().containing('a', "1", "2").containing('b', "1")));
     }
 
     @Test public void unmarshalling_ignores_empty_parts() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         assertThat(ticketFactory.unmarshal(",xnoodles"), is(emptyTicket()));
     }
 
     @Test public void unescapes_ascii_characters_when_unmarshalling() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         assertThat(ticketFactory.unmarshal("a1+2c2,xnoodles"), is(ticket().containing('a', "1,2")));
     }
 
     @Test public void unescapes_other_unicode_characters_when_unmarshalling() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         assertThat(ticketFactory.unmarshal("a=20ac,xnoodles"), is(ticket().containing('a', "\u20ac")));
     }
 
     @Test public void unescapes_even_when_hex_formatted_as_uppercase() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         assertThat(ticketFactory.unmarshal("a=20AC,xnoodles"), is(ticket().containing('a', "\u20ac")));
     }
 
     @Test(expected = InvalidTicketException.class) public void fails_to_unmarshal_empty_string() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         ticketFactory.unmarshal("");
     }
 
     @Test(expected = TicketMacMismatchException.class) public void fails_to_unmarshal_just_invalid_mac() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         ticketFactory.unmarshal("xblahblah");
     }
 
     @Test(expected = TicketMacMismatchException.class) public void fails_to_unmarshal_attribute_and_invalid_mac() throws Exception {
-        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(DUMMY_MAC_GENERATOR);
         ticketFactory.unmarshal("a1,xblahblah");
     }
 
     @Test public void marshalling_passes_empty_payload_to_mac_generator() throws Exception {
         TicketMacGenerator macGenerator = mock(TicketMacGenerator.class);
         when(macGenerator.generateMAC(anyString())).thenReturn("zzzz");
-        TicketFactory ticketFactory = new TicketFactory(macGenerator, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(macGenerator);
         ticketFactory.marshal(new Ticket());
         verify(macGenerator).generateMAC("");
         verifyNoMoreInteractions(macGenerator);
@@ -163,7 +196,7 @@ public class TicketFactoryTest {
     @Test public void marshalling_passes_payload_without_trailer_to_mac_generator() throws Exception {
         TicketMacGenerator macGenerator = mock(TicketMacGenerator.class);
         when(macGenerator.generateMAC(anyString())).thenReturn("zzzz");
-        TicketFactory ticketFactory = new TicketFactory(macGenerator, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(macGenerator);
         Ticket ticket = new Ticket();
         ticket.add('a', "1");
         ticketFactory.marshal(ticket);
@@ -174,7 +207,7 @@ public class TicketFactoryTest {
     @Test public void unmarshalling_passes_empty_payload_to_mac_generator() throws Exception {
         TicketMacGenerator macGenerator = mock(TicketMacGenerator.class);
         when(macGenerator.generateMAC(anyString())).thenReturn("zzzz");
-        TicketFactory ticketFactory = new TicketFactory(macGenerator, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(macGenerator);
         ticketFactory.unmarshal("xzzzz");
         verify(macGenerator).generateMAC("");
         verifyNoMoreInteractions(macGenerator);
@@ -183,7 +216,7 @@ public class TicketFactoryTest {
     @Test public void unmarshalling_passes_payload_without_trailer_to_mac_generator() throws Exception {
         TicketMacGenerator macGenerator = mock(TicketMacGenerator.class);
         when(macGenerator.generateMAC(anyString())).thenReturn("zzzz");
-        TicketFactory ticketFactory = new TicketFactory(macGenerator, ',', "=+".toCharArray());
+        TicketFactory ticketFactory = new TicketFactory(macGenerator);
         ticketFactory.unmarshal("a1,xzzzz");
         verify(macGenerator).generateMAC("a1");
         verifyNoMoreInteractions(macGenerator);
