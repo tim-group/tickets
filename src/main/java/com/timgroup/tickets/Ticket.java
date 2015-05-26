@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class Ticket {
@@ -18,15 +19,15 @@ public class Ticket {
         return data.get(key);
     }
 
-    public String getOne(char key) {
+    public Optional<String> getOne(char key) {
         if (!data.containsKey(key)) {
-            return null;
+            return Optional.empty();
         }
         List<String> list = data.get(key);
         if (list.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
-        return list.get(0);
+        return Optional.of(list.get(0));
     }
 
     public Set<Character> keySet() {
