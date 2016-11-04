@@ -18,6 +18,54 @@ public class HashMacGenerator implements TicketMacGenerator {
         return Mac.getInstance(algorithm).getMacLength();
     }
 
+    public static HashMacGenerator sha1(byte[] secret, int sliceOffset, int sliceLength) {
+        try {
+            return new HashMacGenerator(secret, "HmacSHA1", sliceOffset, sliceLength);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Really expected HmacSHA1 to be available", e);
+        }
+    }
+
+    public static HashMacGenerator sha1(String secret, int sliceOffset, int sliceLength) {
+        return sha1(secret.getBytes(UTF8), sliceOffset, sliceLength);
+    }
+
+    public static HashMacGenerator sha1(byte[] secret) {
+        try {
+            return new HashMacGenerator(secret, "HmacSHA1");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Really expected HmacSHA1 to be available", e);
+        }
+    }
+
+    public static HashMacGenerator sha1(String secret) {
+        return sha1(secret.getBytes(UTF8));
+    }
+
+    public static HashMacGenerator sha256(byte[] secret, int sliceOffset, int sliceLength) {
+        try {
+            return new HashMacGenerator(secret, "HmacSHA256", sliceOffset, sliceLength);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Really expected HmacSHA256 to be available", e);
+        }
+    }
+
+    public static HashMacGenerator sha256(String secret, int sliceOffset, int sliceLength) {
+        return sha256(secret.getBytes(UTF8), sliceOffset, sliceLength);
+    }
+
+    public static HashMacGenerator sha256(byte[] secret) {
+        try {
+            return new HashMacGenerator(secret, "HmacSHA256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Really expected HmacSHA256 to be available", e);
+        }
+    }
+
+    public static HashMacGenerator sha256(String secret) {
+        return sha256(secret.getBytes(UTF8));
+    }
+
     public HashMacGenerator(byte[] secret, String algorithm) throws NoSuchAlgorithmException {
         this.secret = secret;
         this.algorithm = algorithm;
