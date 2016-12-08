@@ -7,15 +7,12 @@ if (doSigning) {
 apply plugin: 'eclipse'
 
 group = 'com.timgroup'
-ext {
-    url = 'https://github.com/youdevise/tickets'
-    slf4jVersion = '1.7.12'
-    majorVersion = 1
-    minorVersion = 0
-}
+ext.url = 'https://github.com/youdevise/Tucker'
 
 sourceCompatibility = 1.8
-targetCompatibility = 1.8
+
+def majorVersion = 1
+def minorVersion = 0
 
 /** for Maven Central; manually bump major and/or minor version numbers before building */
 def isPublicRelease() {
@@ -38,25 +35,30 @@ if (isPublicRelease()) {
 }
 
 jar {
-    manifest { 
+    manifest {
         attributes(
-            'Implementation-Title': project.name,
-            'Implementation-Version': project.version,
-            'Implementation-Vendor': 'youDevise Ltd',
-            'Implementation-Vendor-Id': project.group,
-            'Implementation-URL': project.url
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version,
+                'Implementation-Vendor': 'youDevise Ltd',
+                'Implementation-Vendor-Id': project.group,
+                'Implementation-URL': project.url
         )
     }
 }
 
 repositories {
-    mavenLocal()
     if (project.hasProperty('repoUrl')) {
-        mavenRepo url: "${project.repoUrl}/groups/public"
-    }
-    else {
+        maven {
+            name "nexus"
+            url "${project.repoUrl}/groups/public"
+        }
+    } else {
         mavenCentral()
     }
+}
+
+ext {
+    slf4jVersion = '1.7.5'
 }
 
 // some of these dependencies are optional, in that they are needed to build, but might not be needed to run; Gradle does currently let us say so
@@ -90,15 +92,15 @@ task pom {
             name project.name
             description 'Encode and decode data to cookie-suitable strings, including a MAC to make them tamper-resistant'
             url project.url
-            
+
             packaging 'jar'
-            
+
             scm {
                 url "scm:${project.url}"
                 connection 'scm:git:https://github.com/youdevise/tickets.git'
                 developerConnection 'scm:git:git://github.com/youdevise/tickets.git'
             }
-            
+
             licenses {
                 license {
                     name 'The BSD 2-Clause License'
@@ -106,7 +108,7 @@ task pom {
                     distribution 'repo'
                 }
             }
-            
+
             developers {
                 developer {
                     email 'opensource@timgroup.com'
@@ -114,8 +116,9 @@ task pom {
             }
         }
     }
-} << {
-    pom.writeTo("$buildDir/pom.xml")
+    doLast {
+        pom.writeTo("$buildDir/pom.xml")
+    }
 }
 
 uploadArchives {
@@ -155,13 +158,15 @@ eclipse {
     }
 }
 
-task hgignore << {
-    // gitignore and hgignore syntax are similar enough that this works (for now)
-    file('.hgignore').withWriter { out ->
-        out.println 'syntax: glob'
-        out.println '.hgignore'
-        file('.gitignore').eachLine { line ->
-            out.println line
+task hgignore {
+    doLast {
+        // gitignore and hgignore syntax are similar enough that this works (for now)
+        file('.hgignore').withWriter { out ->
+            out.println 'syntax: glob'
+            out.println '.hgignore'
+            file('.gitignore').eachLine { line ->
+                out.println line
+            }
         }
     }
 }
