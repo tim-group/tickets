@@ -7,7 +7,7 @@ if (doSigning) {
 apply plugin: 'eclipse'
 
 group = 'com.timgroup'
-ext.url = 'https://github.com/youdevise/Tucker'
+ext.url = 'https://github.com/tim-group/tickets'
 
 sourceCompatibility = 1.8
 
