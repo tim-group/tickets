@@ -1,0 +1,3 @@
+rootProject.name = "tickets"
+
+enableFeaturePreview('STABLE_PUBLISHING')
