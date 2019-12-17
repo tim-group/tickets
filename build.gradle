@@ -11,16 +11,20 @@ ext {
 group = 'com.timgroup'
 if (System.getenv("BUILD_NUMBER")) version = "1.0.${System.getenv('BUILD_NUMBER')}"
 
-tasks.withType(JavaCompile).all {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
     options.incremental = true
     options.deprecation = true
     options.compilerArgs << "-parameters"
 }
 
-jar {
+tasks.withType(Jar).configureEach {
     manifest {
         attributes(
                 'Implementation-Title': project.name,
@@ -36,7 +40,6 @@ repositories {
     mavenCentral()
 }
 
-// some of these dependencies are optional, in that they are needed to build, but might not be needed to run; Gradle does currently let us say so
 dependencies {
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
@@ -45,19 +48,6 @@ dependencies {
 
     testRuntimeOnly "org.slf4j:slf4j-simple:$slf4jVersion"
 }
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
- 
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-assemble.dependsOn(javadocJar)
-assemble.dependsOn(sourcesJar)
 
 publishing {
     repositories {
@@ -77,8 +67,6 @@ publishing {
                     : project == rootProject ? project.name
                     : rootProject.name + project.path.replace(':', '-')
             from components.java
-            artifact(sourcesJar)
-            artifact(javadocJar)
             pom.withXml {
                 asNode().children().last() + {
                     resolveStrategy = DELEGATE_FIRST
